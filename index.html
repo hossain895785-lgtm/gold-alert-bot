@@ -132,6 +132,12 @@
       color: var(--gold);
     }
 
+    .btn-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
     .btn-sm {
       background: var(--card-2);
       color: var(--gold);
@@ -321,13 +327,13 @@
       </div>
     </div>
 
-    <!-- BAJUS রেট কার্ড -->
+    <!-- BAJUS রেট কার্ড (প্রতি ভরি) -->
     <div class="card">
       <div class="section-head">
-        <span class="section-title">🇧🇩 BAJUS রেট (GoldR / সংরক্ষিত)</span>
-        <div style="display:flex; gap:6px;">
-          <button class="btn-sm" onclick="loadBajusJson()">📥 JSON লোড</button>
-          <button class="btn-sm" id="useBajusBtn" onclick="toggleMode('BAJUS')">BAJUS মোডে হিসাব</button>
+        <span class="section-title">🇧🇩 BAJUS রেট (প্রতি ভরি • GoldR)</span>
+        <div class="btn-row">
+          <button type="button" class="btn-sm" onclick="loadBajusJson()">📥 JSON লোড</button>
+          <button type="button" class="btn-sm" id="useBajusBtn" onclick="toggleMode('BAJUS')">BAJUS মোডে হিসাব</button>
         </div>
       </div>
 
@@ -344,24 +350,24 @@
 
       <div class="bajus-summary">
         <div class="bajus-box">
-          <div class="k">২২ ক্যারেট</div>
+          <div class="k">২২ ক্যারেট / ভরি</div>
           <div class="v" id="bVal22">৳0</div>
           <div class="u" id="uVal22">$0.00</div>
         </div>
         <div class="bajus-box">
-          <div class="k">২১ ক্যারেট</div>
+          <div class="k">২১ ক্যারেট / ভরি</div>
           <div class="v" id="bVal21">৳0</div>
           <div class="u" id="uVal21">$0.00</div>
         </div>
         <div class="bajus-box">
-          <div class="k">১৮ ক্যারেট</div>
+          <div class="k">১৮ ক্যারেট / ভরি</div>
           <div class="v" id="bVal18">৳0</div>
           <div class="u" id="uVal18">$0.00</div>
         </div>
       </div>
 
       <div class="note" id="bajusMetaNote">
-        * GitHub Actions-এ `fetch_bajus.py` চালালে `bajus.json` তৈরি হয়ে এখানে অটো লোড হবে; আর ব্রাউজার ফায়ারওয়াল/CORS ব্লক করলে ম্যানুয়াল মান সেভ করেও ব্যবহার করতে পারবেন।
+        * bajus.json থেকে প্রতি-গ্রামের রেট নিয়ে ১১.৬৬৪ গ্রাম দিয়ে গুণ করে প্রতি-ভরি দাম দেখানো হচ্ছে; প্রয়োজনে ২২ ক্যারেটের ভরি রেট এডিট করতে পারবেন।
       </div>
     </div>
 
@@ -369,9 +375,9 @@
     <div class="card">
       <div class="section-head">
         <span class="section-title">🧮 ভরি, আনা ও রতি ক্যালকুলেটর</span>
-        <div style="display:flex; gap:6px;">
-          <button class="btn-sm active" id="useIntlBtn" onclick="toggleMode('INTL')">আন্তর্জাতিক লাইভ</button>
-          <button class="btn-sm" onclick="syncLiveRates()">🔄 সিংক</button>
+        <div class="btn-row">
+          <button type="button" class="btn-sm active" id="useIntlBtn" onclick="toggleMode('INTL')">আন্তর্জাতিক লাইভ</button>
+          <button type="button" class="btn-sm" onclick="syncLiveRates()">🔄 সিংক</button>
         </div>
       </div>
 
@@ -401,191 +407,242 @@
         </div>
       </div>
 
-      <div class="input-group" style="margin-bottom: 10px;">
-        <label>ক্যারেট নির্বাচন করুন</label>
-        <select id="karatSelect" onchange="calculateGold()">
-          <option value="22" selected>২২ ক্যারেট</option>
-          <option value="21">২১ ক্যারেট</option>
-          <option value="18">১৮ ক্যারেট</option>
-        </select>
+      <div class="calc-grid">
+        <div class="input-group">
+          <label>ক্যারেট নির্বাচন করুন</label>
+          <select id="karatSelect" onchange="calculateGold()">
+            <option value="24">২৪ ক্যারেট (৯৯.৯%)</option>
+            <option value="22" selected>২২ ক্যারেট (৯১.৬%)</option>
+            <option value="21">২১ ক্যারেট (৮৭.৫%)</option>
+            <option value="18">১৮ ক্যারেট (৭৫.০%)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>মোট ওজন (গ্রাম)</label>
+          <input type="text" id="totalGramsText" value="11.664 g" readonly />
+        </div>
       </div>
 
       <div class="result-box">
         <div>
-          <div class="res-label" id="modeLabel">মোট বাংলাদেশি টাকা (আন্তর্জাতিক লাইভ)</div>
-          <div class="res-bdt" id="outBdt">৳0</div>
+          <div class="res-label" id="calcModeLabel">আনুমানিক মূল্য (আন্তর্জাতিক লাইভ)</div>
+          <div class="res-bdt" id="resBdt">৳0</div>
         </div>
         <div>
-          <div class="res-label" style="text-align:right;">মোট আমেরিকান ডলার</div>
-          <div class="res-usd" id="outUsd">$0.00</div>
+          <div class="res-label" style="text-align:right;">সমপরিমাণ USD</div>
+          <div class="res-usd" id="resUsd">$0.00</div>
         </div>
       </div>
 
-      <div class="note" id="syncStatus">
-        * আন্তর্জাতিক লাইভ মোডে স্পট গোল্ড ও ডলার রেট থেকে হিসাব হয়; BAJUS মোডে গেলে আপনার সংরক্ষিত/JSON BAJUS রেট অনুযায়ী ভরি-আনা-রতির হিসাব দেখায়।
+      <div class="note">
+        * ১ ভরি = ১১.৬৬৪ গ্রাম, ১ আনা = ১৬ ভাগের ১ ভরি (০.৭২৯ গ্রাম), ১ রতি = ৬ ভাগের ১ আনা (০.১২০ গ্রাম)।
       </div>
     </div>
   </div>
 
   <script>
-    const OUNCE_TO_GRAM = 31.1034768;
-    const VORI_TO_GRAM = 11.664;
-    let calcMode = "INTL";
-    let bajusTableUsd = { 22: 0, 21: 0, 18: 0 };
+    const VORI_GRAMS = 11.664;
+    const ANA_GRAMS = VORI_GRAMS / 16;
+    const ROTI_GRAMS = ANA_GRAMS / 6;
+    const TROY_OUNCE_GRAMS = 31.1034768;
 
-    function fmtBDT(n) {
-      return "৳" + Math.round(n || 0).toLocaleString("en-IN");
+    let currentMode = "INTL";
+    let bajusRatesPerVori = {
+      22: 194964,
+      21: Math.round(194964 * (21 / 22)),
+      18: Math.round(194964 * (18 / 22)),
+    };
+
+    function formatBdt(num) {
+      if (!isFinite(num) || num <= 0) return "৳0";
+      return "৳" + Math.round(num).toLocaleString("en-IN");
     }
 
-    function fmtUSD(n) {
-      return "$" + Number(n || 0).toLocaleString("en-US", {
+    function formatUsd(num) {
+      if (!isFinite(num) || num <= 0) return "$0.00";
+      return "$" + Number(num).toLocaleString("en-US", {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       });
     }
 
     function updateClocks() {
       const now = new Date();
-      document.getElementById("bdClock").textContent = now.toLocaleTimeString("en-US", {
-        timeZone: "Asia/Dhaka", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+
+      const bdTime = now.toLocaleTimeString("en-US", {
+        timeZone: "Asia/Dhaka",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
       });
-      document.getElementById("bdDate").textContent = now.toLocaleDateString("en-GB", {
-        timeZone: "Asia/Dhaka", day: "2-digit", month: "short", year: "numeric"
+      const bdDate = now.toLocaleDateString("en-GB", {
+        timeZone: "Asia/Dhaka",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
       });
 
-      document.getElementById("usClock").textContent = now.toLocaleTimeString("en-US", {
-        timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+      const usTime = now.toLocaleTimeString("en-US", {
+        timeZone: "America/New_York",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
       });
-      document.getElementById("usDate").textContent = now.toLocaleDateString("en-US", {
-        timeZone: "America/New_York", month: "short", day: "2-digit", year: "numeric"
+      const usDate = now.toLocaleDateString("en-US", {
+        timeZone: "America/New_York",
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
       });
+
+      document.getElementById("bdClock").textContent = bdTime;
+      document.getElementById("bdDate").textContent = bdDate;
+      document.getElementById("usClock").textContent = usTime;
+      document.getElementById("usDate").textContent = usDate;
+    }
+
+    function renderBajusCards() {
+      const usdRate = Math.max(1, parseFloat(document.getElementById("usdRate").value) || 124.8);
+
+      const v22 = Math.max(0, parseFloat(bajusRatesPerVori[22]) || 0);
+      const v21 = Math.max(0, parseFloat(bajusRatesPerVori[21]) || 0);
+      const v18 = Math.max(0, parseFloat(bajusRatesPerVori[18]) || 0);
+
+      document.getElementById("bVal22").textContent = formatBdt(v22);
+      document.getElementById("bVal21").textContent = formatBdt(v21);
+      document.getElementById("bVal18").textContent = formatBdt(v18);
+
+      document.getElementById("uVal22").textContent = formatUsd(v22 / usdRate);
+      document.getElementById("uVal21").textContent = formatUsd(v21 / usdRate);
+      document.getElementById("uVal18").textContent = formatUsd(v18 / usdRate);
     }
 
     function saveAndUpdateBajus() {
-      const val = parseFloat(document.getElementById("bajus22Vori").value) || 0;
-      if (val > 0) {
-        localStorage.setItem("bajus_22_vori", String(val));
-      }
+      const input22 = Math.max(0, parseFloat(document.getElementById("bajus22Vori").value) || 0);
+      bajusRatesPerVori[22] = input22;
+      bajusRatesPerVori[21] = Math.round(input22 * (21 / 22));
+      bajusRatesPerVori[18] = Math.round(input22 * (18 / 22));
+
+      try {
+        localStorage.setItem("savedBajus22Vori", String(input22));
+      } catch (e) {}
+
+      document.getElementById("bajusStatusText").value = "ম্যানুয়াল ভরি আপডেট";
       renderBajusCards();
       calculateGold();
     }
 
-    function renderBajusCards() {
-      const v22 = parseFloat(document.getElementById("bajus22Vori").value) || 0;
-      const v21 = bajusTableUsd[21] ? v22 * (21 / 22) : v22 * (21 / 22);
-      const v18 = v22 * (18 / 22);
-
-      document.getElementById("bVal22").textContent = fmtBDT(v22);
-      document.getElementById("bVal21").textContent = fmtBDT(v21);
-      document.getElementById("bVal18").textContent = fmtBDT(v18);
-
-      const usdRate = parseFloat(document.getElementById("usdRate").value) || 124.8;
-      document.getElementById("uVal22").textContent = fmtUSD(bajusTableUsd[22] || (v22 / usdRate));
-      document.getElementById("uVal21").textContent = fmtUSD(bajusTableUsd[21] || (v21 / usdRate));
-      document.getElementById("uVal18").textContent = fmtUSD(bajusTableUsd[18] || (v18 / usdRate));
-    }
-
     async function loadBajusJson() {
       const statusEl = document.getElementById("bajusStatusText");
-      const metaEl = document.getElementById("bajusMetaNote");
+      const noteEl = document.getElementById("bajusMetaNote");
       try {
-        const res = await fetch("bajus.json?t=" + Date.now());
-        if (!res.ok) throw new Error("No bajus.json");
+        const res = await fetch("bajus.json?t=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
         const data = await res.json();
-        const r22 = data.rates?.["22 Karat"];
-        const r21 = data.rates?.["21 Karat"];
-        const r18 = data.rates?.["18 Karat"];
+        const rates = data.rates || {};
 
-        if (r22?.bdt > 0) {
-          document.getElementById("bajus22Vori").value = r22.bdt;
-          localStorage.setItem("bajus_22_vori", String(r22.bdt));
+        const r22Gram = parseFloat(rates["22 Karat"]?.bdt) || 0;
+        const r21Gram = parseFloat(rates["21 Karat"]?.bdt) || 0;
+        const r18Gram = parseFloat(rates["18 Karat"]?.bdt) || 0;
+
+        if (r22Gram > 0) {
+          const v22 = Math.round(r22Gram * VORI_GRAMS);
+          const v21 = r21Gram > 0 ? Math.round(r21Gram * VORI_GRAMS) : Math.round(v22 * (21 / 22));
+          const v18 = r18Gram > 0 ? Math.round(r18Gram * VORI_GRAMS) : Math.round(v22 * (18 / 22));
+
+          bajusRatesPerVori = { 22: v22, 21: v21, 18: v18 };
+          document.getElementById("bajus22Vori").value = v22;
+          statusEl.value = "bajus.json (প্রতি ভরি)";
+          noteEl.textContent = `* সোর্স: goldr.org (11.664g/ভরি) • সর্বশেষ সিংক: ${data.updated_at || "আপডেট"}`;
+          renderBajusCards();
+          calculateGold();
+          return;
         }
-        bajusTableUsd[22] = r22?.usd || 0;
-        bajusTableUsd[21] = r21?.usd || 0;
-        bajusTableUsd[18] = r18?.usd || 0;
-
-        statusEl.value = "bajus.json আপডেট";
-        metaEl.textContent = `* সোর্স: goldr.org • সর্বশেষ সিংক: ${data.updated_at || "সম্প্রতি"}`;
+        throw new Error("Empty rate data");
+      } catch (err) {
+        statusEl.value = "লোকাল / অফলাইন মান";
         renderBajusCards();
         calculateGold();
-      } catch (e) {
-        const saved = localStorage.getItem("bajus_22_vori");
-        if (saved && Number(saved) > 0) {
-          document.getElementById("bajus22Vori").value = saved;
-        }
-        statusEl.value = "লোকাল সেভড রেট";
-        renderBajusCards();
       }
     }
 
     function toggleMode(mode) {
-      calcMode = mode;
-      document.getElementById("useIntlBtn").classList.toggle("active", mode === "INTL");
-      document.getElementById("useBajusBtn").classList.toggle("active", mode === "BAJUS");
-      document.getElementById("modeLabel").textContent =
-        mode === "BAJUS" ? "মোট বাংলাদেশি টাকা (BAJUS মোড)" : "মোট বাংলাদেশি টাকা (আন্তর্জাতিক লাইভ)";
+      currentMode = mode;
+      const intlBtn = document.getElementById("useIntlBtn");
+      const bajusBtn = document.getElementById("useBajusBtn");
+      const modeLabel = document.getElementById("calcModeLabel");
+
+      if (mode === "BAJUS") {
+        bajusBtn.classList.add("active");
+        intlBtn.classList.remove("active");
+        modeLabel.textContent = "আনুমানিক মূল্য (BAJUS প্রতি ভরি)";
+      } else {
+        intlBtn.classList.add("active");
+        bajusBtn.classList.remove("active");
+        modeLabel.textContent = "আনুমানিক মূল্য (আন্তর্জাতিক লাইভ)";
+      }
       calculateGold();
     }
 
-    async function syncLiveRates() {
-      const statusEl = document.getElementById("syncStatus");
-      try {
-        const [goldRes, fxRes] = await Promise.all([
-          fetch("https://api.gold-api.com/price/XAU"),
-          fetch("https://open.er-api.com/v6/latest/USD")
-        ]);
-        if (!goldRes.ok || !fxRes.ok) throw new Error("Fetch failed");
-
-        const goldData = await goldRes.json();
-        const fxData = await fxRes.json();
-
-        const price = Number(goldData.price);
-        const bdt = Number(fxData.rates?.BDT);
-
-        if (price > 0) document.getElementById("spotUsd").value = price.toFixed(2);
-        if (bdt > 0) document.getElementById("usdRate").value = bdt.toFixed(2);
-
-        renderBajusCards();
-        calculateGold();
-        statusEl.textContent = "* লাইভ স্পট গোল্ড ও USD/BDT রেট আপডেট হয়েছে।";
-      } catch (err) {
-        statusEl.textContent = "* লাইভ রেট আনতে সমস্যা হলে হাতে বসিয়েও হিসাব করতে পারবেন।";
-      }
+    function syncLiveRates() {
+      loadBajusJson();
     }
 
     function calculateGold() {
-      const spotUsd = parseFloat(document.getElementById("spotUsd").value) || 0;
-      const usdRate = parseFloat(document.getElementById("usdRate").value) || 124.8;
-      const vori = parseFloat(document.getElementById("inVori").value) || 0;
-      const ana = parseFloat(document.getElementById("inAna").value) || 0;
-      const roti = parseFloat(document.getElementById("inRoti").value) || 0;
-      const karat = parseFloat(document.getElementById("karatSelect").value) || 22;
-      const bajus22 = parseFloat(document.getElementById("bajus22Vori").value) || 0;
+      const vori = Math.max(0, parseFloat(document.getElementById("inVori").value) || 0);
+      const ana = Math.max(0, parseFloat(document.getElementById("inAna").value) || 0);
+      const roti = Math.max(0, parseFloat(document.getElementById("inRoti").value) || 0);
+      const karat = parseInt(document.getElementById("karatSelect").value, 10) || 22;
 
       const totalVori = vori + (ana / 16) + (roti / 96);
+      const totalGrams = (vori * VORI_GRAMS) + (ana * ANA_GRAMS) + (roti * ROTI_GRAMS);
+      document.getElementById("totalGramsText").value = totalGrams.toFixed(3) + " g";
 
-      const intlUsdPerVori24 = (spotUsd / OUNCE_TO_GRAM) * VORI_TO_GRAM;
-      const intlUsdPerVori = intlUsdPerVori24 * (karat / 24);
-      const totalUsd = totalVori * intlUsdPerVori;
+      const spotUsd = Math.max(0, parseFloat(document.getElementById("spotUsd").value) || 0);
+      const usdRate = Math.max(1, parseFloat(document.getElementById("usdRate").value) || 124.8);
 
       let totalBdt = 0;
-      if (calcMode === "BAJUS") {
-        const bajusVoriForKarat = bajus22 * (karat / 22);
-        totalBdt = totalVori * bajusVoriForKarat;
+
+      if (currentMode === "BAJUS") {
+        let ratePerVori = bajusRatesPerVori[karat];
+        if (!ratePerVori) {
+          const base22 = bajusRatesPerVori[22] || 0;
+          ratePerVori = base22 * (karat / 22);
+        }
+        totalBdt = totalVori * ratePerVori;
       } else {
-        totalBdt = totalUsd * usdRate;
+        const purityFactor = karat / 24;
+        const perGramUsd = (spotUsd / TROY_OUNCE_GRAMS) * purityFactor;
+        totalBdt = totalGrams * perGramUsd * usdRate;
       }
 
-      document.getElementById("outBdt").textContent = fmtBDT(totalBdt);
-      document.getElementById("outUsd").textContent = fmtUSD(totalUsd);
+      const totalUsd = totalBdt / usdRate;
+
+      document.getElementById("resBdt").textContent = formatBdt(totalBdt);
+      document.getElementById("resUsd").textContent = formatUsd(totalUsd);
+      renderBajusCards();
     }
+
+    try {
+      const saved22 = localStorage.getItem("savedBajus22Vori");
+      if (saved22 && parseFloat(saved22) > 0) {
+        const v22 = parseFloat(saved22);
+        document.getElementById("bajus22Vori").value = v22;
+        bajusRatesPerVori = {
+          22: v22,
+          21: Math.round(v22 * (21 / 22)),
+          18: Math.round(v22 * (18 / 22)),
+        };
+      }
+    } catch (e) {}
 
     updateClocks();
     setInterval(updateClocks, 1000);
-    loadBajusJson();
-    syncLiveRates();
-    setInterval(syncLiveRates, 30000);
+    renderBajusCards();
     calculateGold();
+    loadBajusJson();
   </script>
 </body>
-  </html>
+</html>
