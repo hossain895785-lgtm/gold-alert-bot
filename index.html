@@ -460,6 +460,10 @@
     const ROTI_GRAMS = ANA_GRAMS / 6;
     const TROY_OUNCE_GRAMS = 31.1034768;
 
+    try {
+      localStorage.removeItem("savedBajus22Vori");
+    } catch (e) {}
+
     let currentMode = "INTL";
     let bajusRatesPerVori = {
       22: 194964,
