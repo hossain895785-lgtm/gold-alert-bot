@@ -195,6 +195,11 @@
       outline: none;
     }
 
+    .input-group input[readonly] {
+      opacity: 0.88;
+      cursor: default;
+    }
+
     .bajus-summary {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -327,7 +332,7 @@
       </div>
     </div>
 
-    <!-- BAJUS রেট কার্ড (প্রতি ভরি) -->
+    <!-- BAJUS রেট কার্ড (প্রতি ভরি • এডিট লক) -->
     <div class="card">
       <div class="section-head">
         <span class="section-title">🇧🇩 BAJUS রেট (প্রতি ভরি • GoldR)</span>
@@ -339,8 +344,8 @@
 
       <div class="calc-grid">
         <div class="input-group">
-          <label>BAJUS ২২ ক্যারেট (৳ / ভরি)</label>
-          <input type="number" id="bajus22Vori" value="194964" step="any" oninput="saveAndUpdateBajus()" />
+          <label>BAJUS ২২ ক্যারেট (৳ / ভরি • লক)</label>
+          <input type="number" id="bajus22Vori" value="194964" readonly />
         </div>
         <div class="input-group">
           <label>সোর্স স্ট্যাটাস</label>
@@ -367,7 +372,7 @@
       </div>
 
       <div class="note" id="bajusMetaNote">
-        * bajus.json থেকে প্রতি-গ্রামের রেট নিয়ে ১১.৬৬৪ গ্রাম দিয়ে গুণ করে প্রতি-ভরি দাম দেখানো হচ্ছে; প্রয়োজনে ২২ ক্যারেটের ভরি রেট এডিট করতে পারবেন।
+        * bajus.json থেকে প্রতি-গ্রামের রেট নিয়ে ১১.৬৬৪ গ্রাম দিয়ে গুণ করে প্রতি-ভরি দাম দেখানো হচ্ছে; রেট এডিট লক করা আছে।
       </div>
     </div>
 
@@ -519,21 +524,6 @@
       document.getElementById("uVal18").textContent = formatUsd(v18 / usdRate);
     }
 
-    function saveAndUpdateBajus() {
-      const input22 = Math.max(0, parseFloat(document.getElementById("bajus22Vori").value) || 0);
-      bajusRatesPerVori[22] = input22;
-      bajusRatesPerVori[21] = Math.round(input22 * (21 / 22));
-      bajusRatesPerVori[18] = Math.round(input22 * (18 / 22));
-
-      try {
-        localStorage.setItem("savedBajus22Vori", String(input22));
-      } catch (e) {}
-
-      document.getElementById("bajusStatusText").value = "ম্যানুয়াল ভরি আপডেট";
-      renderBajusCards();
-      calculateGold();
-    }
-
     async function loadBajusJson() {
       const statusEl = document.getElementById("bajusStatusText");
       const noteEl = document.getElementById("bajusMetaNote");
@@ -554,7 +544,7 @@
 
           bajusRatesPerVori = { 22: v22, 21: v21, 18: v18 };
           document.getElementById("bajus22Vori").value = v22;
-          statusEl.value = "bajus.json (প্রতি ভরি)";
+          statusEl.value = "bajus.json (প্রতি ভরি • লক)";
           noteEl.textContent = `* সোর্স: goldr.org (11.664g/ভরি) • সর্বশেষ সিংক: ${data.updated_at || "আপডেট"}`;
           renderBajusCards();
           calculateGold();
@@ -624,19 +614,6 @@
       document.getElementById("resUsd").textContent = formatUsd(totalUsd);
       renderBajusCards();
     }
-
-    try {
-      const saved22 = localStorage.getItem("savedBajus22Vori");
-      if (saved22 && parseFloat(saved22) > 0) {
-        const v22 = parseFloat(saved22);
-        document.getElementById("bajus22Vori").value = v22;
-        bajusRatesPerVori = {
-          22: v22,
-          21: Math.round(v22 * (21 / 22)),
-          18: Math.round(v22 * (18 / 22)),
-        };
-      }
-    } catch (e) {}
 
     updateClocks();
     setInterval(updateClocks, 1000);
