@@ -108,4 +108,4 @@ if __name__ == "__main__":
     try:
         fetch_goldr()
     except Exception as e:
-        print("Error fetching goldr.org:", e)", e)
+        print("Error fetching goldr.org:", e)
