@@ -14,6 +14,7 @@
       --muted: #9ca3af;
       --green: #22c55e;
       --blue: #60a5fa;
+      --red: #f87171;
       --border: rgba(255, 255, 255, 0.08);
     }
 
@@ -42,12 +43,19 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+      gap: 8px;
     }
 
     .header h1 {
       font-size: 1.15rem;
       color: var(--gold);
       font-weight: 800;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .live-badge {
@@ -117,6 +125,15 @@
       overflow: hidden;
     }
 
+    .admin-drawer {
+      background: var(--card);
+      border: 1px solid rgba(245, 185, 66, 0.35);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
     .section-head {
       display: flex;
       justify-content: space-between;
@@ -152,6 +169,19 @@
     .btn-sm.active {
       background: var(--gold);
       color: #0b0f19;
+    }
+
+    .btn-save {
+      background: var(--gold);
+      color: #0b0f19;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 6px;
     }
 
     .chart-wrapper {
@@ -277,13 +307,67 @@
       margin-top: 8px;
       line-height: 1.45;
     }
+
+    .admin-msg {
+      margin-top: 8px;
+      font-size: 0.76rem;
+      color: var(--green);
+      min-height: 18px;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <h1>🪙 লাইভ গোল্ড মার্কেট ও BAJUS</h1>
-      <div class="live-badge"><span class="dot"></span> REAL-TIME</div>
+      <div class="header-actions">
+        <button type="button" class="btn-sm" onclick="toggleAdminPanel()">⚙️ অ্যাডমিন</button>
+        <div class="live-badge"><span class="dot"></span> REAL-TIME</div>
+      </div>
+    </div>
+
+    <!-- ভেতরের অ্যাডমিন প্যানেল -->
+    <div class="admin-drawer" id="adminDrawer">
+      <div class="section-head">
+        <span class="section-title">🎛️ মিডিয়া অ্যাডমিন প্যানেল</span>
+        <button type="button" class="btn-sm" onclick="closeAdminPanel()">✕ বন্ধ</button>
+      </div>
+
+      <div id="adminPinBox">
+        <div class="input-group" style="margin-bottom:8px;">
+          <label>অ্যাডমিন PIN</label>
+          <input type="password" id="adminPinInput" placeholder="PIN লিখুন" />
+        </div>
+        <button type="button" class="btn-save" onclick="unlockAdmin()">প্যানেল খুলুন</button>
+        <div class="admin-msg" id="pinErrorMsg" style="color: var(--red);"></div>
+      </div>
+
+      <div id="adminControlsBox" style="display:none;">
+        <div class="input-group" style="margin-bottom:8px;">
+          <label>GitHub Token (ব্রাউজারে সেভ থাকবে)</label>
+          <input type="password" id="ghTokenInput" placeholder="ghp_... বা Fine-grained token" />
+        </div>
+
+        <div class="calc-grid">
+          <div class="input-group">
+            <label>কী দেখাবেন?</label>
+            <select id="adminMediaType">
+              <option value="image">🖼️ ছবি (Image)</option>
+              <option value="video">🎥 ভিডিও (YouTube / .mp4)</option>
+              <option value="chart">📈 চার্ট (আগের লাইভ চার্ট)</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>ছবি বা ভিডিওর লিংক</label>
+            <input type="url" id="adminMediaUrl" placeholder="লিংক না দিলে চার্ট দেখাবে" />
+          </div>
+        </div>
+
+        <button type="button" class="btn-save" onclick="saveMediaToGitHub()">💾 সেভ ও আপডেট করুন</button>
+        <button type="button" class="btn-sm" style="width:100%; margin-top:6px; padding:8px;" onclick="resetMediaToChart()">📈 লিংক মুছে চার্টে ফিরুন</button>
+        <div class="admin-msg" id="adminSaveStatus"></div>
+      </div>
     </div>
 
     <div class="clock-grid">
@@ -316,9 +400,9 @@
 
     <div class="card">
       <div class="section-head">
-        <span class="section-title">📈 লাইভ স্পট গোল্ড চার্ট (XAU/USD)</span>
+        <span class="section-title" id="mediaSectionTitle">📈 লাইভ স্পট গোল্ড চার্ট (XAU/USD)</span>
       </div>
-      <div class="chart-wrapper">
+      <div class="chart-wrapper" id="dynamicMediaSlot">
         <div class="tradingview-widget-container" style="height:100%;width:100%">
           <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
@@ -459,6 +543,12 @@
     const ANA_GRAMS = VORI_GRAMS / 16;
     const ROTI_GRAMS = ANA_GRAMS / 6;
     const TROY_OUNCE_GRAMS = 31.1034768;
+
+    const GH_OWNER = "hossain895785-lgtm";
+    const GH_REPO = "gold-alert-bot";
+    const GH_FILE_PATH = "media.json";
+    const GH_BRANCH = "main";
+    const ADMIN_PIN = "5285286";
 
     try {
       localStorage.removeItem("savedBajus22Vori");
@@ -628,11 +718,154 @@
       renderBajusCards();
     }
 
+    function toggleAdminPanel() {
+      const drawer = document.getElementById("adminDrawer");
+      drawer.style.display = drawer.style.display === "block" ? "none" : "block";
+    }
+
+    function closeAdminPanel() {
+      document.getElementById("adminDrawer").style.display = "none";
+    }
+
+    function unlockAdmin() {
+      const pin = document.getElementById("adminPinInput").value.trim();
+      const err = document.getElementById("pinErrorMsg");
+      if (pin === ADMIN_PIN) {
+        err.textContent = "";
+        document.getElementById("adminPinBox").style.display = "none";
+        document.getElementById("adminControlsBox").style.display = "block";
+        try {
+          const savedToken = localStorage.getItem("gh_admin_token") || "";
+          if (savedToken) document.getElementById("ghTokenInput").value = savedToken;
+        } catch (e) {}
+      } else {
+        err.textContent = "❌ ভুল PIN!";
+      }
+    }
+
+    function toBase64Utf8(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = "";
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    }
+
+    async function saveMediaToGitHub() {
+      const token = document.getElementById("ghTokenInput").value.trim();
+      const rawUrl = document.getElementById("adminMediaUrl").value.trim();
+      let type = document.getElementById("adminMediaType").value;
+      const statusEl = document.getElementById("adminSaveStatus");
+
+      if (!token) {
+        statusEl.style.color = "var(--red)";
+        statusEl.textContent = "❌ আগে GitHub Token দিন।";
+        return;
+      }
+
+      if (!rawUrl) {
+        type = "chart";
+      }
+
+      try {
+        localStorage.setItem("gh_admin_token", token);
+      } catch (e) {}
+
+      statusEl.style.color = "var(--gold)";
+      statusEl.textContent = "⏳ সেভ হচ্ছে...";
+
+      const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+      };
+
+      try {
+        let sha = undefined;
+        const headRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers });
+        if (headRes.ok) {
+          const info = await headRes.json();
+          sha = info.sha;
+        }
+
+        const payload = {
+          type,
+          url: type === "chart" ? "" : rawUrl,
+          updated_at: new Date().toISOString(),
+        };
+
+        const body = {
+          message: `Update media.json (${type})`,
+          content: toBase64Utf8(JSON.stringify(payload, null, 2)),
+          branch: GH_BRANCH,
+        };
+        if (sha) body.sha = sha;
+
+        const putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(body),
+        });
+
+        if (!putRes.ok) throw new Error("Save failed");
+
+        statusEl.style.color = "var(--green)";
+        statusEl.textContent = "✅ সেভ হয়েছে! ১ মিনিটের মধ্যে লাইভ পেজে আপডেট হবে।";
+      } catch (err) {
+        statusEl.style.color = "var(--red)";
+        statusEl.textContent = "❌ সেভ করা যায়নি। Token বা Repo নাম যাচাই করুন।";
+      }
+    }
+
+    async function resetMediaToChart() {
+      document.getElementById("adminMediaUrl").value = "";
+      document.getElementById("adminMediaType").value = "chart";
+      await saveMediaToGitHub();
+    }
+
+    function getYouTubeEmbedUrl(url) {
+      const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]+)/);
+      return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1&mute=1` : null;
+    }
+
+    async function applyMediaConfig() {
+      try {
+        const res = await fetch(`media.json?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const url = (data?.url || "").trim();
+        const type = url ? (data?.type || "image") : "chart";
+
+        document.getElementById("adminMediaType").value = type;
+        document.getElementById("adminMediaUrl").value = url;
+
+        if (type === "chart" || !url) return;
+
+        const slot = document.getElementById("dynamicMediaSlot");
+        const titleEl = document.getElementById("mediaSectionTitle");
+        if (!slot) return;
+
+        if (type === "image") {
+          if (titleEl) titleEl.textContent = "🖼️ ফিচার্ড ছবি";
+          slot.innerHTML = `<img src="${url}" alt="Media" style="width:100%;height:100%;object-fit:contain;background:#0b0f19;" />`;
+        } else if (type === "video") {
+          if (titleEl) titleEl.textContent = "🎥 ফিচার্ড ভিডিও";
+          const yt = getYouTubeEmbedUrl(url);
+          if (yt) {
+            slot.innerHTML = `<iframe src="${yt}" style="width:100%;height:100%;border:0;" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+          } else {
+            slot.innerHTML = `<video src="${url}" controls autoplay muted playsinline style="width:100%;height:100%;object-fit:contain;background:#000;"></video>`;
+          }
+        }
+      } catch (e) {}
+    }
+
     updateClocks();
     setInterval(updateClocks, 1000);
     renderBajusCards();
     calculateGold();
     loadBajusJson();
+    applyMediaConfig();
   </script>
 </body>
 </html>
