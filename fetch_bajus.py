@@ -15,7 +15,46 @@ def parse_num(text):
     return float(cleaned) if cleaned else 0.0
 
 
-def send_telegram_message(payload):
+def build_chart_url(rates, updated_at):
+    r22 = rates.get("22 Karat", {})
+    r21 = rates.get("21 Karat", {})
+    r18 = rates.get("18 Karat", {})
+
+    v22 = round(float(r22.get("bdt", 0) or 0) * VORI_GRAMS)
+    v21 = round(float(r21.get("bdt", 0) or 0) * VORI_GRAMS)
+    v18 = round(float(r18.get("bdt", 0) or 0) * VORI_GRAMS)
+
+    chart_config = {
+        "type": "bar",
+        "data": {
+            "labels": ["22 Karat", "21 Karat", "18 Karat"],
+            "datasets": [
+                {
+                    "label": "Per Vori (BDT)",
+                    "data": [v22, v21, v18],
+                    "backgroundColor": ["#f59e0b", "#3b82f6", "#10b981"],
+                }
+            ],
+        },
+        "options": {
+            "plugins": {
+                "title": {
+                    "display": True,
+                    "text": f"BAJUS Gold Rate per Vori ({updated_at})",
+                },
+                "legend": {"display": False},
+            },
+            "scales": {
+                "y": {"beginAtZero": False}
+            },
+        },
+    }
+
+    encoded = urllib.parse.quote(json.dumps(chart_config, separators=(",", ":")))
+    return f"https://quickchart.io/chart?w=700&h=400&bkg=white&c={encoded}"
+
+
+def send_telegram_with_chart(payload):
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
     if not token or not chat_id:
@@ -23,6 +62,7 @@ def send_telegram_message(payload):
         return
 
     rates = payload.get("rates", {})
+    updated_at = payload.get("updated_at", "")
     r22 = rates.get("22 Karat", {})
     r21 = rates.get("21 Karat", {})
     r18 = rates.get("18 Karat", {})
@@ -37,26 +77,52 @@ def send_telegram_message(payload):
             f"  └ গ্রাম: *৳{gram_bdt:,.0f}* (${usd:.2f})"
         )
 
-    lines = [
+    caption = "\n".join([
         "🪙 *BAJUS গোল্ড রেট আপডেট (GoldR)*",
-        f"🕒 সময়: {payload.get('updated_at', '')}",
+        f"🕒 সময়: {updated_at}",
         "",
         fmt_line("২২ ক্যারেট", r22),
         fmt_line("২১ ক্যারেট", r21),
         fmt_line("১৮ ক্যারেট", r18),
-    ]
-    text = "\n".join(lines)
+    ])
 
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    data = urllib.parse.urlencode({
-        "chat_id": chat_id,
-        "text": text,
-        "parse_mode": "Markdown",
-    }).encode("utf-8")
+    chart_url = build_chart_url(rates, updated_at)
 
-    req = urllib.request.Request(url, data=data, method="POST")
-    with urllib.request.urlopen(req, timeout=20) as resp:
-        print("Telegram response status:", resp.status)
+    # ছবি ডাউনলোড করে multipart/form-data দিয়ে Telegram sendPhoto-তে পাঠানো
+    with urllib.request.urlopen(chart_url, timeout=25) as img_resp:
+        img_bytes = img_resp.read()
+
+    boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    body = []
+
+    def add_field(name, value):
+        body.append(f"--{boundary}\r\n".encode("utf-8"))
+        body.append(f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode("utf-8"))
+        body.append(f"{value}\r\n".encode("utf-8"))
+
+    add_field("chat_id", chat_id)
+    add_field("caption", caption)
+    add_field("parse_mode", "Markdown")
+
+    body.append(f"--{boundary}\r\n".encode("utf-8"))
+    body.append(
+        b'Content-Disposition: form-data; name="photo"; filename="gold_chart.png"\r\n'
+        b"Content-Type: image/png\r\n\r\n"
+    )
+    body.append(img_bytes)
+    body.append(f"\r\n--{boundary}--\r\n".encode("utf-8"))
+
+    payload_bytes = b"".join(body)
+    api_url = f"https://api.telegram.org/bot{token}/sendPhoto"
+    req = urllib.request.Request(
+        api_url,
+        data=payload_bytes,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        method="POST",
+    )
+
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        print("Telegram sendPhoto status:", resp.status)
 
 
 def fetch_goldr():
@@ -112,7 +178,7 @@ def fetch_goldr():
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
     print("Saved bajus.json:", json.dumps(payload, ensure_ascii=False))
-    send_telegram_message(payload)
+    send_telegram_with_chart(payload)
 
 
 if __name__ == "__main__":
