@@ -21,6 +21,9 @@ jobs:
           python-version: "3.11"
 
       - name: Fetch GoldR BAJUS prices
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python fetch_bajus.py
 
       - name: Commit bajus.json if changed
