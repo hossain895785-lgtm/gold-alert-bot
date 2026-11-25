@@ -1,21 +1,21 @@
 {
   "source": "https://www.goldr.org/",
-  "updated_at": "25 Nov 2026, 09:51 AM",
+  "updated_at": "25 Nov 2026, 10:57 AM",
   "rates": {
     "22 Karat": {
-      "bdt": 17120.0,
-      "usd": 137.07
+      "bdt": 16875.0,
+      "usd": 135.11
     },
     "21 Karat": {
-      "bdt": 16350.0,
-      "usd": 130.91
+      "bdt": 16120.0,
+      "usd": 129.07
     },
     "18 Karat": {
-      "bdt": 14045.0,
-      "usd": 112.45
+      "bdt": 13845.0,
+      "usd": 110.85
     },
     "Traditional": {
-      "bdt": 11445.0,
+      "bdt": 11285.0,
       "usd": 0.0
     }
   }
